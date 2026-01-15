@@ -1,0 +1,59 @@
+.collage-panel {
+  position: absolute;
+  left: 80px; /* Sidebar width */
+  top: 60px; /* Header height */
+  bottom: 0;
+  width: 250px;
+  background-color: #1e1e1e;
+  border-right: 1px solid #333;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.collage-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  color: white;
+}
+
+.collage-header button {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.templates-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.template-verify-item {
+  background: #2a2a2a;
+  border-radius: 4px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.template-verify-item:hover {
+  background: #3a3a3a;
+}
+
+.template-verify-item span {
+  margin-top: 5px;
+  font-size: 0.7rem;
+  color: #ccc;
+  text-align: center;
+}

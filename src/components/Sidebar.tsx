@@ -1,10 +1,21 @@
 import React, { useRef } from "react";
-import { FaFont, FaShapes, FaImage, FaMousePointer } from "react-icons/fa";
+import {
+  FaFont,
+  FaShapes,
+  FaImage,
+  FaMousePointer,
+  FaThLarge,
+} from "react-icons/fa";
 import { useCanvasContext } from "../context/CanvasContext";
 import { Rect, Circle, IText, FabricImage } from "fabric";
+import { addImageToFrame } from "../features/collage/collageUtils";
 import "./Sidebar.css";
 
-const Sidebar: React.FC = () => {
+interface SidebarProps {
+  onCollageClick: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ onCollageClick }) => {
   const { canvas } = useCanvasContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -53,14 +64,21 @@ const Sidebar: React.FC = () => {
     reader.onload = (f) => {
       const data = f.target?.result as string;
       FabricImage.fromURL(data).then((img) => {
-        img.set({
-          left: 100,
-          top: 100,
-          scaleX: 0.5,
-          scaleY: 0.5,
-        });
-        canvas.add(img);
-        canvas.setActiveObject(img);
+        // Check if a frame is selected
+        const activeObject = canvas.getActiveObject();
+        // We marked frames with isFrame = true
+        if (activeObject && (activeObject as any).isFrame) {
+          addImageToFrame(canvas, activeObject as Rect, img);
+        } else {
+          img.set({
+            left: 100,
+            top: 100,
+            scaleX: 0.5,
+            scaleY: 0.5,
+          });
+          canvas.add(img);
+          canvas.setActiveObject(img);
+        }
       });
     };
     reader.readAsDataURL(file);
@@ -80,6 +98,10 @@ const Sidebar: React.FC = () => {
       <div className="tool-item active">
         <FaMousePointer size={20} />
         <span>Select</span>
+      </div>
+      <div className="tool-item" onClick={onCollageClick}>
+        <FaThLarge size={20} />
+        <span>Collage</span>
       </div>
       <div className="tool-item" onClick={addRectangle}>
         <FaShapes size={20} />
