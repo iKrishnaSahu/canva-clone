@@ -17,29 +17,42 @@ export const addGridToCanvas = (canvas: Canvas, layout: GridLayout) => {
   const BASE_WIDTH = 400; // From gridTemplates.ts
   const BASE_HEIGHT = 400;
 
-  // Calculate scale to fit
-  // Use 'cover' or 'contain' logic? 'Contain' is safer so it fits.
-  // We want to scale the 400x400 grid to fit into availableWidth x availableHeight
+  // Calculate scaling
+  // We want the grid to fill the available space while maintaining its relative proportions locally
+  // But wait, if the canvas format changes (e.g. 9:16), the "Grid" should probably adapt to that aspect ratio?
+  // User asked "creating collage for different aspect ratio considering different formats".
+  // This implies the grid layout itself should STRETCH to fit the canvas format, usually.
+  // Or distinct templates for distinct ratios.
+  // Assuming "Responsive Grid" approach: we stretch the 400x400 base layout to fill available area.
+
   const scaleX = availableWidth / BASE_WIDTH;
   const scaleY = availableHeight / BASE_HEIGHT;
 
-  // Maintain aspect ratio if desired, but grids might be flexible. 
-  // Let's use the smaller scale to fit entirely.
-  const scale = Math.min(scaleX, scaleY);
+  // If we want to stretch to fill (distortion of squares -> rectangles):
+  // const finalScaleX = scaleX;
+  // const finalScaleY = scaleY;
 
-  // Center logic
-  const contentWidth = BASE_WIDTH * scale;
-  const contentHeight = BASE_HEIGHT * scale;
+  // If we want to keep squares square, we use min scale.
+  // Most collage apps STRETCH the layout to the canvas ratio.
+  const stretch = true;
 
-  const offsetX = (canvasWidth - contentWidth) / 2;
-  const offsetY = (canvasHeight - contentHeight) / 2;
+  const offsetX = margin;
+  const offsetY = margin;
 
   layout.frames.forEach((frame) => {
+    // If stretching, we scale X and Y independently
+    const effectiveScaleX = stretch ? scaleX : Math.min(scaleX, scaleY);
+    const effectiveScaleY = stretch ? scaleY : Math.min(scaleX, scaleY);
+
+    // Re-calculate centering if not stretching
+    const finalOffsetX = stretch ? offsetX : (canvasWidth - (BASE_WIDTH * effectiveScaleX)) / 2;
+    const finalOffsetY = stretch ? offsetY : (canvasHeight - (BASE_HEIGHT * effectiveScaleY)) / 2;
+
     const rect = new Rect({
-      left: (frame.left * scale) + offsetX, // Scale coordinate
-      top: (frame.top * scale) + offsetY,
-      width: frame.width * scale, // Scale dimension
-      height: frame.height * scale,
+      left: (frame.left * effectiveScaleX) + finalOffsetX,
+      top: (frame.top * effectiveScaleY) + finalOffsetY,
+      width: frame.width * effectiveScaleX,
+      height: frame.height * effectiveScaleY,
       fill: frame.fill,
       stroke: '#fff',
       strokeWidth: 2,
@@ -47,7 +60,7 @@ export const addGridToCanvas = (canvas: Canvas, layout: GridLayout) => {
       hasControls: true,
       lockScalingX: false,
       lockScalingY: false,
-      strokeUniform: true // Keep stroke width constant
+      strokeUniform: true
     });
 
     // Use custom property
@@ -58,16 +71,21 @@ export const addGridToCanvas = (canvas: Canvas, layout: GridLayout) => {
   });
 
   const group = new Group(groupObjects, {
-    left: offsetX,
+    left: offsetX, // This might need adjustment if centering logic changed
     top: offsetY,
-    subTargetCheck: true, // Allows selecting inner objects
+    subTargetCheck: true,
     interactive: true,
   });
+
+  // Re-center the group object itself to be safe, or just let the items define it.
+  // Group creation from items sets its width/height/left/top based on items.
+  // So we just add it.
 
   // Tag the group
   (group as any).isCollageGroup = true;
 
   canvas.add(group);
+  canvas.centerObject(group); // Ensure perfect centering
   canvas.setActiveObject(group);
   canvas.requestRenderAll();
 };
