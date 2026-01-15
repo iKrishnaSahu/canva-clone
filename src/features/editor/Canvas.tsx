@@ -14,7 +14,35 @@ const CanvasComponent: React.FC = () => {
 
   useEffect(() => {
     if (!fabricCanvas || !containerRef.current) return;
-    // Resize logic placeholder
+
+    // Keyboard delete support
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if typing in an input or textarea
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
+
+      if (e.key === "Delete" || e.key === "Backspace") {
+        const activeObjects = fabricCanvas.getActiveObjects();
+
+        // Don't delete if we are editing text
+        const isEditing = activeObjects.some((obj) => (obj as any).isEditing);
+
+        if (activeObjects.length && !isEditing) {
+          fabricCanvas.remove(...activeObjects);
+          fabricCanvas.discardActiveObject();
+          fabricCanvas.requestRenderAll();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [fabricCanvas]);
 
   return (

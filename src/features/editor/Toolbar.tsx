@@ -5,25 +5,19 @@ import "./Toolbar.css";
 
 const Toolbar: React.FC = () => {
   const { canvas } = useCanvasContext();
-  const [selectedObject, setSelectedObject] = useState<FabricObject | null>(
-    null
-  );
+  const [selectedObjects, setSelectedObjects] = useState<FabricObject[]>([]);
 
   useEffect(() => {
     if (!canvas) return;
 
     const updateSelection = () => {
-      const activeObjects = canvas.getActiveObjects();
-      if (activeObjects.length === 1) {
-        setSelectedObject(activeObjects[0]);
-      } else {
-        setSelectedObject(null);
-      }
+      const active = canvas.getActiveObjects();
+      setSelectedObjects(active);
     };
 
     canvas.on("selection:created", updateSelection);
     canvas.on("selection:updated", updateSelection);
-    canvas.on("selection:cleared", () => setSelectedObject(null));
+    canvas.on("selection:cleared", () => setSelectedObjects([]));
 
     return () => {
       canvas.off("selection:created", updateSelection);
@@ -33,46 +27,49 @@ const Toolbar: React.FC = () => {
   }, [canvas]);
 
   const changeColor = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (selectedObject) {
-      selectedObject.set("fill", e.target.value);
-      canvas?.requestRenderAll();
-    }
+    selectedObjects.forEach((obj) => {
+      obj.set("fill", e.target.value);
+    });
+    canvas?.requestRenderAll();
   };
 
   const deleteObject = () => {
-    if (selectedObject && canvas) {
-      canvas.remove(selectedObject);
+    if (selectedObjects.length > 0 && canvas) {
+      canvas.remove(...selectedObjects);
       canvas.discardActiveObject();
       canvas.requestRenderAll();
-      setSelectedObject(null);
+      setSelectedObjects([]);
     }
   };
 
   const sendToBack = () => {
-    if (selectedObject && canvas) {
-      canvas.sendObjectToBack(selectedObject);
+    if (canvas) {
+      selectedObjects.forEach((obj) => canvas.sendObjectToBack(obj));
       canvas.requestRenderAll();
     }
   };
 
   const bringToFront = () => {
-    if (selectedObject && canvas) {
-      canvas.bringObjectToFront(selectedObject);
+    if (canvas) {
+      selectedObjects.forEach((obj) => canvas.bringObjectToFront(obj));
       canvas.requestRenderAll();
     }
   };
 
-  if (!selectedObject) return <div className="toolbar-placeholder"></div>;
+  if (selectedObjects.length === 0)
+    return <div className="toolbar-placeholder"></div>;
+
+  const singleSelection =
+    selectedObjects.length === 1 ? selectedObjects[0] : null;
+  const commonColor = singleSelection
+    ? (singleSelection.fill as string)
+    : "#000000";
 
   return (
     <div className="toolbar">
       <div className="toolbar-item">
         <label>Color</label>
-        <input
-          type="color"
-          onChange={changeColor}
-          defaultValue={(selectedObject.fill as string) || "#000000"}
-        />
+        <input type="color" onChange={changeColor} defaultValue={commonColor} />
       </div>
       <button onClick={deleteObject}>Delete</button>
       <button onClick={sendToBack}>Send to Back</button>
