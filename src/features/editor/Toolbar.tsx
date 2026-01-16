@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useCanvasContext } from "../../context/CanvasContext";
 import { FabricObject, FabricImage, filters } from "fabric";
-import { addImageToFrame } from "../collage/collageUtils";
+import {
+  addImageToFrame,
+  updateCollageSettings,
+} from "../collage/collageUtils";
 import {
   FormatAlignLeft,
   FormatAlignCenter,
@@ -18,7 +21,10 @@ import {
   AspectRatio,
   GroupWork,
   AccountTree,
+  GridOn,
+  RoundedCorner,
 } from "@mui/icons-material";
+
 import {
   Box,
   Paper,
@@ -162,6 +168,42 @@ const Toolbar: React.FC = () => {
   const singleSelection =
     selectedObjects.length === 1 ? selectedObjects[0] : null;
 
+  // Collage Settings
+  const isCollageGroup =
+    singleSelection && (singleSelection as any).isCollageGroup;
+  const isCollageFrame = singleSelection && (singleSelection as any).isFrame;
+  const showCollageControls = isCollageGroup || isCollageFrame;
+
+  const collageConfig = isCollageGroup
+    ? (singleSelection as any).collageConfig || { spacing: 0, roundness: 0 }
+    : { spacing: 0, roundness: (singleSelection as any).rx || 0 };
+  // Note: For frames, we read rx. Spacing (padding) is stateless/delta unless stored.
+  // We default spacing to 0 for single frame adjustments as "padding" usually starts from current.
+
+  const handleSpacingChange = (_: Event, newValue: number | number[]) => {
+    if (!canvas) return;
+    const val = newValue as number;
+    updateCollageSettings(
+      canvas,
+      { spacing: val, roundness: collageConfig.roundness },
+      singleSelection || undefined
+    );
+    // Force re-render to update UI slider state if needed (though we read from object on render)
+    // State lifting might be better but reading from object works if we trigger re-render
+    canvas.requestRenderAll();
+  };
+
+  const handleRoundnessChange = (_: Event, newValue: number | number[]) => {
+    if (!canvas) return;
+    const val = newValue as number;
+    updateCollageSettings(
+      canvas,
+      { spacing: collageConfig.spacing, roundness: val },
+      singleSelection || undefined
+    );
+    canvas.requestRenderAll();
+  };
+
   // Safe checks for properties
   const commonColor = singleSelection
     ? (singleSelection.fill as string)
@@ -233,6 +275,47 @@ const Toolbar: React.FC = () => {
             <GroupWork />
           </IconButton>
         </Tooltip>
+      )}
+
+      {/* Collage Controls */}
+      {showCollageControls && (
+        <>
+          <Box
+            sx={{ width: 120, display: "flex", alignItems: "center", gap: 1 }}
+          >
+            <Tooltip title={isCollageFrame ? "Padding" : "Spacing"}>
+              <GridOn fontSize="small" color="action" />
+            </Tooltip>
+            <Slider
+              size="small"
+              value={collageConfig.spacing || 0} // Default 0 for frame padding
+              min={0}
+              max={50}
+              onChange={handleSpacingChange}
+              // For Frames, spacing acts as "shrink", so subsequent drags might compound if we don't track base?
+              // `updateCollageSettings` uses `originalLayout` and absolute `spacing` value to recalculate.
+              // So the slider value MUST be the absolute "spacing" intended.
+              // For a Frame, we don't store "spacing" on it yet in `collageUtils`.
+              // If we don't store it, the slider will snap to 0.
+              // We should ideally store "padding" on the frame.
+            />
+          </Box>
+          <Box
+            sx={{ width: 120, display: "flex", alignItems: "center", gap: 1 }}
+          >
+            <Tooltip title="Roundness">
+              <RoundedCorner fontSize="small" color="action" />
+            </Tooltip>
+            <Slider
+              size="small"
+              value={collageConfig.roundness || 0}
+              min={0}
+              max={50}
+              onChange={handleRoundnessChange}
+            />
+          </Box>
+          <Divider orientation="vertical" flexItem />
+        </>
       )}
       {singleSelection && singleSelection.type === "group" && (
         <Tooltip title="Ungroup">

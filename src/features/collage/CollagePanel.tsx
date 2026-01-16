@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useCanvasContext } from "../../context/CanvasContext";
 import { GRID_TEMPLATES } from "./gridTemplates";
 import type { GridLayout } from "./gridTemplates";
@@ -22,6 +22,9 @@ interface CollagePanelProps {
 
 const CollagePanel: React.FC<CollagePanelProps> = ({ isOpen, onClose }) => {
   const { canvas } = useCanvasContext();
+  useEffect(() => {
+    // Removed selection listening logic as settings are now in Toolbar
+  }, [canvas]);
 
   const handleTemplateClick = (template: GridLayout) => {
     if (canvas) {
@@ -85,6 +88,16 @@ const CollagePanel: React.FC<CollagePanelProps> = ({ isOpen, onClose }) => {
       </Box>
 
       <Box sx={{ p: 2, overflowY: "auto" }}>
+        <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: "bold" }}>
+          Cell Settings (moved to toolbar)
+        </Typography>
+        <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
+          <Typography variant="body2" color="text.secondary">
+            Use the top toolbar to adjust Spacing and Roundness when a collage
+            is selected.
+          </Typography>
+        </Paper>
+
         <FormControl fullWidth size="small" sx={{ mb: 3 }}>
           <InputLabel>Canvas Format</InputLabel>
           <Select
