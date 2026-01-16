@@ -48,14 +48,22 @@ export const addGridToCanvas = (canvas: Canvas, layout: GridLayout) => {
     const finalOffsetX = stretch ? offsetX : (canvasWidth - (BASE_WIDTH * effectiveScaleX)) / 2;
     const finalOffsetY = stretch ? offsetY : (canvasHeight - (BASE_HEIGHT * effectiveScaleY)) / 2;
 
+    // Calculate absolute center for the frame
+    const frameWidth = frame.width * effectiveScaleX;
+    const frameHeight = frame.height * effectiveScaleY;
+    const centerX = (frame.left * effectiveScaleX) + finalOffsetX + frameWidth / 2;
+    const centerY = (frame.top * effectiveScaleY) + finalOffsetY + frameHeight / 2;
+
     const rect = new Rect({
-      left: (frame.left * effectiveScaleX) + finalOffsetX,
-      top: (frame.top * effectiveScaleY) + finalOffsetY,
-      width: frame.width * effectiveScaleX,
-      height: frame.height * effectiveScaleY,
-      fill: frame.fill,
-      stroke: '#fff',
-      strokeWidth: 2,
+      left: centerX,
+      top: centerY,
+      width: frameWidth,
+      height: frameHeight,
+      originX: 'center',
+      originY: 'center',
+      fill: '#f8f9fa', // Light grey placeholder
+      stroke: '#e0e0e0', // Subtle border
+      strokeWidth: 1,
       selectable: true,
       hasControls: true,
       lockScalingX: false,
@@ -68,11 +76,12 @@ export const addGridToCanvas = (canvas: Canvas, layout: GridLayout) => {
     (rect as any).isFrame = true;
 
     groupObjects.push(rect);
+
+
   });
 
   const group = new Group(groupObjects, {
-    left: offsetX, // This might need adjustment if centering logic changed
-    top: offsetY,
+    // Let Fabric calculate the group's bounding box from the objects
     subTargetCheck: true,
     interactive: true,
   });
