@@ -11,8 +11,6 @@ import {
 } from "@mui/material";
 import { Close } from "@mui/icons-material";
 
-// import "../collage/CollagePanel.css"; // Removed
-
 interface TextPanelProps {
   isOpen: boolean;
   onClose: () => void;

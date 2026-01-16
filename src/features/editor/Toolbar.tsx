@@ -32,8 +32,6 @@ import {
   Button,
 } from "@mui/material";
 
-// import "./Toolbar.css"; // Removed
-
 const Toolbar: React.FC = () => {
   const { canvas } = useCanvasContext();
   const [selectedObjects, setSelectedObjects] = useState<FabricObject[]>([]);

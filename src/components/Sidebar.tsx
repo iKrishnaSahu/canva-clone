@@ -11,12 +11,43 @@ import { FabricImage, Rect } from "fabric";
 import { addImageToFrame } from "../features/collage/collageUtils";
 import { Paper, Button, Typography, Box } from "@mui/material";
 
-// import "./Sidebar.css"; // Removing custom CSS
-
 interface SidebarProps {
   activePanel: string | null;
   onPanelChange: (panel: string | null) => void;
 }
+
+const SidebarButton = ({
+  icon,
+  label,
+  isActive,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  isActive?: boolean;
+  onClick: () => void;
+}) => (
+  <Button
+    variant={isActive ? "contained" : "text"}
+    color={isActive ? "primary" : "inherit"}
+    onClick={onClick}
+    sx={{
+      display: "flex",
+      flexDirection: "column",
+      minWidth: 0,
+      width: "100%",
+      py: 1.5,
+      gap: 0.5,
+      borderRadius: 2,
+      "&:hover": { bgcolor: "action.hover" },
+    }}
+  >
+    <Box sx={{ fontSize: 20, display: "flex" }}>{icon}</Box>
+    <Typography variant="caption" sx={{ fontSize: "0.7rem", lineHeight: 1 }}>
+      {label}
+    </Typography>
+  </Button>
+);
 
 const Sidebar: React.FC<SidebarProps> = ({ activePanel, onPanelChange }) => {
   const { canvas } = useCanvasContext();
@@ -61,39 +92,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activePanel, onPanelChange }) => {
       onPanelChange(panel);
     }
   };
-
-  const SidebarButton = ({
-    icon,
-    label,
-    isActive,
-    onClick,
-  }: {
-    icon: React.ReactNode;
-    label: string;
-    isActive?: boolean;
-    onClick: () => void;
-  }) => (
-    <Button
-      variant={isActive ? "contained" : "text"}
-      color={isActive ? "primary" : "inherit"}
-      onClick={onClick}
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        minWidth: 0,
-        width: "100%",
-        py: 1.5,
-        gap: 0.5,
-        borderRadius: 2,
-        "&:hover": { bgcolor: "action.hover" },
-      }}
-    >
-      <Box sx={{ fontSize: 20, display: "flex" }}>{icon}</Box>
-      <Typography variant="caption" sx={{ fontSize: "0.7rem", lineHeight: 1 }}>
-        {label}
-      </Typography>
-    </Button>
-  );
 
   return (
     <Paper

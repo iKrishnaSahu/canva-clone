@@ -15,8 +15,6 @@ import {
 } from "@mui/material";
 import { Close } from "@mui/icons-material";
 
-// import "./CollagePanel.css"; // Removing custom CSS
-
 interface CollagePanelProps {
   isOpen: boolean;
   onClose: () => void;

@@ -4,8 +4,6 @@ import { Rect, Circle, Triangle, Line } from "fabric";
 import { Box, Typography, IconButton, Paper, Button } from "@mui/material";
 import { Close } from "@mui/icons-material";
 
-// import "../collage/CollagePanel.css"; // Reuse styles
-
 interface ElementsPanelProps {
   isOpen: boolean;
   onClose: () => void;

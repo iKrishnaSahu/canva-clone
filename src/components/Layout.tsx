@@ -7,7 +7,6 @@ import CollagePanel from "../features/collage/CollagePanel";
 import TextPanel from "../features/editor/TextPanel"; // Import TextPanel
 import ElementsPanel from "../features/editor/ElementsPanel"; // Import ElementsPanel
 import { Box } from "@mui/material";
-// import "./Layout.css"; // Removing CSS import as we use MUI Box
 
 const Layout: React.FC = () => {
   const [activePanel, setActivePanel] = useState<string | null>(null);
