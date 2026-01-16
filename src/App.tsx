@@ -1,11 +1,14 @@
 import Layout from "./components/Layout";
 import { CanvasProvider } from "./context/CanvasContext";
+import { ThemeProvider } from "./context/ThemeContext";
 
 function App() {
   return (
-    <CanvasProvider>
-      <Layout />
-    </CanvasProvider>
+    <ThemeProvider>
+      <CanvasProvider>
+        <Layout />
+      </CanvasProvider>
+    </ThemeProvider>
   );
 }
 

@@ -9,7 +9,9 @@ import {
 import { useCanvasContext } from "../context/CanvasContext";
 import { FabricImage, Rect } from "fabric";
 import { addImageToFrame } from "../features/collage/collageUtils";
-import "./Sidebar.css";
+import { Paper, Button, Typography, Box } from "@mui/material";
+
+// import "./Sidebar.css"; // Removing custom CSS
 
 interface SidebarProps {
   activePanel: string | null;
@@ -60,8 +62,55 @@ const Sidebar: React.FC<SidebarProps> = ({ activePanel, onPanelChange }) => {
     }
   };
 
+  const SidebarButton = ({
+    icon,
+    label,
+    isActive,
+    onClick,
+  }: {
+    icon: React.ReactNode;
+    label: string;
+    isActive?: boolean;
+    onClick: () => void;
+  }) => (
+    <Button
+      variant={isActive ? "contained" : "text"}
+      color={isActive ? "primary" : "inherit"}
+      onClick={onClick}
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        minWidth: 0,
+        width: "100%",
+        py: 1.5,
+        gap: 0.5,
+        borderRadius: 2,
+        "&:hover": { bgcolor: "action.hover" },
+      }}
+    >
+      <Box sx={{ fontSize: 20, display: "flex" }}>{icon}</Box>
+      <Typography variant="caption" sx={{ fontSize: "0.7rem", lineHeight: 1 }}>
+        {label}
+      </Typography>
+    </Button>
+  );
+
   return (
-    <aside className="app-sidebar">
+    <Paper
+      square
+      elevation={1}
+      sx={{
+        width: 80,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        flexShrink: 0,
+        zIndex: 100,
+        borderRight: 1,
+        borderColor: "divider",
+        bgcolor: "background.paper",
+      }}
+    >
       <input
         type="file"
         ref={fileInputRef}
@@ -69,39 +118,47 @@ const Sidebar: React.FC<SidebarProps> = ({ activePanel, onPanelChange }) => {
         accept="image/*"
         onChange={handleImageUpload}
       />
-      <div
-        className={`tool-item ${!activePanel ? "active" : ""}`}
-        onClick={() => onPanelChange(null)}
+
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          width: "100%",
+          p: 1,
+          gap: 1,
+        }}
       >
-        <FaMousePointer size={20} />
-        <span>Select</span>
-      </div>
-      <div
-        className={`tool-item ${activePanel === "collage" ? "active" : ""}`}
-        onClick={() => togglePanel("collage")}
-      >
-        <FaThLarge size={20} />
-        <span>Layouts</span>
-      </div>
-      <div
-        className={`tool-item ${activePanel === "elements" ? "active" : ""}`}
-        onClick={() => togglePanel("elements")}
-      >
-        <FaShapes size={20} />
-        <span>Elements</span>
-      </div>
-      <div
-        className={`tool-item ${activePanel === "text" ? "active" : ""}`}
-        onClick={() => togglePanel("text")}
-      >
-        <FaFont size={20} />
-        <span>Text</span>
-      </div>
-      <div className="tool-item" onClick={() => fileInputRef.current?.click()}>
-        <FaImage size={20} />
-        <span>Uploads</span>
-      </div>
-    </aside>
+        <SidebarButton
+          label="Select"
+          icon={<FaMousePointer />}
+          isActive={!activePanel}
+          onClick={() => onPanelChange(null)}
+        />
+        <SidebarButton
+          label="Layouts"
+          icon={<FaThLarge />}
+          isActive={activePanel === "collage"}
+          onClick={() => togglePanel("collage")}
+        />
+        <SidebarButton
+          label="Elements"
+          icon={<FaShapes />}
+          isActive={activePanel === "elements"}
+          onClick={() => togglePanel("elements")}
+        />
+        <SidebarButton
+          label="Text"
+          icon={<FaFont />}
+          isActive={activePanel === "text"}
+          onClick={() => togglePanel("text")}
+        />
+        <SidebarButton
+          label="Uploads"
+          icon={<FaImage />}
+          onClick={() => fileInputRef.current?.click()}
+        />
+      </Box>
+    </Paper>
   );
 };
 

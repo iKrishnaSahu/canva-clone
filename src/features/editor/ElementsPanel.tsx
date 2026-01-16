@@ -1,7 +1,10 @@
 import React from "react";
 import { useCanvasContext } from "../../context/CanvasContext";
 import { Rect, Circle, Triangle, Line } from "fabric";
-import "../collage/CollagePanel.css"; // Reuse styles
+import { Box, Typography, IconButton, Paper, Button } from "@mui/material";
+import { Close } from "@mui/icons-material";
+
+// import "../collage/CollagePanel.css"; // Reuse styles
 
 interface ElementsPanelProps {
   isOpen: boolean;
@@ -46,105 +49,137 @@ const ElementsPanel: React.FC<ElementsPanelProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="collage-panel">
-      <div className="collage-header">
-        <h3>Elements</h3>
-        <button onClick={onClose}>&times;</button>
-      </div>
-
-      <div
-        style={{
-          padding: "20px",
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "10px",
+    <Paper
+      elevation={4}
+      sx={{
+        position: "absolute",
+        left: 0,
+        top: 0,
+        bottom: 0,
+        width: 320,
+        zIndex: 110,
+        display: "flex",
+        flexDirection: "column",
+        borderRight: 1,
+        borderColor: "divider",
+        bgcolor: "background.paper",
+      }}
+    >
+      <Box
+        sx={{
+          p: 2,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          borderBottom: 1,
+          borderColor: "divider",
         }}
       >
-        <button
-          style={{
-            height: "80px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          onClick={() => addShape("rect")}
-        >
-          <div
-            style={{
-              width: 30,
-              height: 30,
-              background: "#555",
-              marginBottom: 5,
-            }}
-          ></div>
-          Square
-        </button>
-        <button
-          style={{
-            height: "80px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          onClick={() => addShape("circle")}
-        >
-          <div
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: "50%",
-              background: "#555",
-              marginBottom: 5,
-            }}
-          ></div>
-          Circle
-        </button>
-        <button
-          style={{
-            height: "80px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          onClick={() => addShape("triangle")}
-        >
-          <div
-            style={{
-              width: 0,
-              height: 0,
-              borderLeft: "15px solid transparent",
-              borderRight: "15px solid transparent",
-              borderBottom: "30px solid #555",
-              marginBottom: 5,
-            }}
-          ></div>
-          Triangle
-        </button>
-        <button
-          style={{
-            height: "80px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          onClick={() => addShape("line")}
-        >
-          <div
-            style={{
-              width: 30,
-              height: 2,
-              background: "#555",
-              marginBottom: 5,
-            }}
-          ></div>
-          Line
-        </button>
-      </div>
-    </div>
+        <Typography variant="h6" fontWeight="bold">
+          Elements
+        </Typography>
+        <IconButton onClick={onClose} size="small">
+          <Close />
+        </IconButton>
+      </Box>
+
+      <Box sx={{ p: 2 }}>
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+          <Box sx={{ width: "calc(50% - 8px)" }}>
+            <Button
+              variant="outlined"
+              fullWidth
+              sx={{
+                height: 100,
+                display: "flex",
+                flexDirection: "column",
+                textTransform: "none",
+                gap: 1,
+                color: "text.primary",
+                borderColor: "divider",
+              }}
+              onClick={() => addShape("rect")}
+            >
+              <Box sx={{ width: 40, height: 40, bgcolor: "text.secondary" }} />
+              <Typography variant="caption">Square</Typography>
+            </Button>
+          </Box>
+          <Box sx={{ width: "calc(50% - 8px)" }}>
+            <Button
+              variant="outlined"
+              fullWidth
+              sx={{
+                height: 100,
+                display: "flex",
+                flexDirection: "column",
+                textTransform: "none",
+                gap: 1,
+                color: "text.primary",
+                borderColor: "divider",
+              }}
+              onClick={() => addShape("circle")}
+            >
+              <Box
+                sx={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: "50%",
+                  bgcolor: "text.secondary",
+                }}
+              />
+              <Typography variant="caption">Circle</Typography>
+            </Button>
+          </Box>
+          <Box sx={{ width: "calc(50% - 8px)" }}>
+            <Button
+              variant="outlined"
+              fullWidth
+              sx={{
+                height: 100,
+                display: "flex",
+                flexDirection: "column",
+                textTransform: "none",
+                gap: 1,
+                color: "text.primary",
+                borderColor: "divider",
+              }}
+              onClick={() => addShape("triangle")}
+            >
+              <Box
+                sx={{
+                  width: 0,
+                  height: 0,
+                  borderLeft: "20px solid transparent",
+                  borderRight: "20px solid transparent",
+                  borderBottom: "40px solid",
+                  borderBottomColor: "text.secondary",
+                }}
+              />
+              <Typography variant="caption">Triangle</Typography>
+            </Button>
+          </Box>
+          <Box sx={{ width: "calc(50% - 8px)" }}>
+            <Button
+              variant="outlined"
+              fullWidth
+              sx={{
+                height: 100,
+                display: "flex",
+                flexDirection: "column",
+                textTransform: "none",
+                gap: 1,
+                color: "text.primary",
+                borderColor: "divider",
+              }}
+              onClick={() => addShape("line")}
+            >
+              <Box sx={{ width: 40, height: 2, bgcolor: "text.secondary" }} />
+              <Typography variant="caption">Line</Typography>
+            </Button>
+          </Box>
+        </Box>
+      </Box>
+    </Paper>
   );
 };
 

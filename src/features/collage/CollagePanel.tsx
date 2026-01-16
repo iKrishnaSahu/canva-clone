@@ -3,7 +3,19 @@ import { useCanvasContext } from "../../context/CanvasContext";
 import { GRID_TEMPLATES } from "./gridTemplates";
 import type { GridLayout } from "./gridTemplates";
 import { addGridToCanvas } from "./collageUtils";
-import "./CollagePanel.css";
+import {
+  Box,
+  Typography,
+  IconButton,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Paper,
+} from "@mui/material";
+import { Close } from "@mui/icons-material";
+
+// import "./CollagePanel.css"; // Removing custom CSS
 
 interface CollagePanelProps {
   isOpen: boolean;
@@ -16,26 +28,17 @@ const CollagePanel: React.FC<CollagePanelProps> = ({ isOpen, onClose }) => {
   const handleTemplateClick = (template: GridLayout) => {
     if (canvas) {
       addGridToCanvas(canvas, template);
-      // Optional: onClose();
     }
   };
 
   const resizeCanvas = (width: number, height: number) => {
     if (!canvas) return;
     canvas.setDimensions({ width, height });
-
-    // Also update the wrapper if possible, or assume wrapper fits content?
-    // The wrapper .canvas-wrapper has fixed 800x600 via CSS typically.
-    // We should probably update the DOM element style too if needed, but Fabric usually handles canvas element.
-    // However, the parent container might wrap it.
-    // Let's rely on Fabric for now, but we might need to notify users to zoom out/in.
-
     const wrapper = canvas.getElement().parentElement;
     if (wrapper) {
       wrapper.style.width = `${width}px`;
       wrapper.style.height = `${height}px`;
     }
-
     canvas.requestRenderAll();
   };
 
@@ -49,78 +52,112 @@ const CollagePanel: React.FC<CollagePanelProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="collage-panel">
-      <div className="collage-header">
-        <h3>Layouts</h3>
-        <button onClick={onClose}>&times;</button>
-      </div>
+    <Paper
+      elevation={4}
+      sx={{
+        position: "absolute",
+        left: 0,
+        top: 0,
+        bottom: 0,
+        width: 320,
+        zIndex: 110,
+        display: "flex",
+        flexDirection: "column",
+        borderRight: 1,
+        borderColor: "divider",
+        bgcolor: "background.paper",
+      }}
+    >
+      <Box
+        sx={{
+          p: 2,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          borderBottom: 1,
+          borderColor: "divider",
+        }}
+      >
+        <Typography variant="h6" fontWeight="bold">
+          Layouts
+        </Typography>
+        <IconButton onClick={onClose} size="small">
+          <Close />
+        </IconButton>
+      </Box>
 
-      <div className="format-selector" style={{ padding: "0 10px 10px" }}>
-        <label
-          style={{
-            display: "block",
-            marginBottom: 5,
-            color: "#ccc",
-            fontSize: "0.8rem",
-          }}
-        >
-          Canvas Format
-        </label>
-        <select
-          style={{
-            width: "100%",
-            padding: 5,
-            background: "#333",
-            color: "#fff",
-            border: "1px solid #444",
-            borderRadius: 4,
-          }}
-          defaultValue="Portrait (4:5)"
-          onChange={(e) => {
-            const fmt = formats.find((f) => f.label === e.target.value);
-            if (fmt) resizeCanvas(fmt.width, fmt.height);
-          }}
-        >
-          {formats.map((f) => (
-            <option key={f.label} value={f.label}>
-              {f.label}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="templates-grid">
-        {GRID_TEMPLATES.map((tpl, idx) => (
-          <div
-            key={idx}
-            className="template-verify-item"
-            onClick={() => handleTemplateClick(tpl)}
-            title={tpl.name}
+      <Box sx={{ p: 2, overflowY: "auto" }}>
+        <FormControl fullWidth size="small" sx={{ mb: 3 }}>
+          <InputLabel>Canvas Format</InputLabel>
+          <Select
+            defaultValue="Portrait (4:5)"
+            label="Canvas Format"
+            onChange={(e) => {
+              const fmt = formats.find((f) => f.label === e.target.value);
+              if (fmt) resizeCanvas(fmt.width, fmt.height);
+            }}
           >
-            <div
-              className="mini-grid"
-              style={{ position: "relative", width: "60px", height: "60px" }}
-            >
-              {tpl.frames.map((f, i) => (
+            {formats.map((f) => (
+              <MenuItem key={f.label} value={f.label}>
+                {f.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <Typography variant="subtitle2" sx={{ mb: 1, color: "text.secondary" }}>
+          Templates
+        </Typography>
+
+        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
+          {GRID_TEMPLATES.map((tpl, idx) => (
+            <Box sx={{ width: "calc(50% - 8px)" }} key={idx}>
+              <Paper
+                variant="outlined"
+                sx={{
+                  p: 1,
+                  cursor: "pointer",
+                  "&:hover": {
+                    borderColor: "primary.main",
+                    bgcolor: "action.hover",
+                  },
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+                onClick={() => handleTemplateClick(tpl)}
+              >
                 <div
-                  key={i}
                   style={{
-                    position: "absolute",
-                    left: `${(f.left / 400) * 100}%`,
-                    top: `${(f.top / 400) * 100}%`,
-                    width: `${(f.width / 400) * 100}%`,
-                    height: `${(f.height / 400) * 100}%`,
-                    background: "#ccc",
-                    border: "1px solid #fff",
+                    position: "relative",
+                    width: "60px",
+                    height: "60px",
                   }}
-                ></div>
-              ))}
-            </div>
-            <span>{tpl.name}</span>
-          </div>
-        ))}
-      </div>
-    </div>
+                >
+                  {tpl.frames.map((f, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        position: "absolute",
+                        left: `${(f.left / 400) * 100}%`,
+                        top: `${(f.top / 400) * 100}%`,
+                        width: `${(f.width / 400) * 100}%`,
+                        height: `${(f.height / 400) * 100}%`,
+                        background: "#ccc",
+                        border: "1px solid #fff",
+                        boxSizing: "border-box",
+                      }}
+                    ></div>
+                  ))}
+                </div>
+                <Typography variant="caption">{tpl.name}</Typography>
+              </Paper>
+            </Box>
+          ))}
+        </Box>
+      </Box>
+    </Paper>
   );
 };
 

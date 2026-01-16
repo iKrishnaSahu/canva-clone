@@ -1,7 +1,17 @@
 import React from "react";
 import { useCanvasContext } from "../../context/CanvasContext";
 import { IText } from "fabric";
-import "../collage/CollagePanel.css"; // Reuse existing styles for consistency
+import {
+  Box,
+  Typography,
+  IconButton,
+  Button,
+  Paper,
+  Stack,
+} from "@mui/material";
+import { Close } from "@mui/icons-material";
+
+// import "../collage/CollagePanel.css"; // Removed
 
 interface TextPanelProps {
   isOpen: boolean;
@@ -16,7 +26,7 @@ const TextPanel: React.FC<TextPanelProps> = ({ isOpen, onClose }) => {
     const textObj = new IText(text, {
       left: 100,
       top: 100,
-      fontFamily: "Arial",
+      fontFamily: "Inter, sans-serif",
       fill: "#333",
       ...options,
     });
@@ -28,49 +38,100 @@ const TextPanel: React.FC<TextPanelProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="collage-panel">
-      <div className="collage-header">
-        <h3>Text</h3>
-        <button onClick={onClose}>&times;</button>
-      </div>
-
-      <div
-        style={{
-          padding: "20px",
+    <Paper
+      elevation={4}
+      sx={{
+        position: "absolute",
+        left: 0,
+        top: 0,
+        bottom: 0,
+        width: 320,
+        zIndex: 110,
+        display: "flex",
+        flexDirection: "column",
+        borderRight: 1,
+        borderColor: "divider",
+        bgcolor: "background.paper",
+      }}
+    >
+      <Box
+        sx={{
+          p: 2,
           display: "flex",
-          flexDirection: "column",
-          gap: "10px",
+          justifyContent: "space-between",
+          alignItems: "center",
+          borderBottom: 1,
+          borderColor: "divider",
         }}
       >
-        <button
-          className="text-btn big"
-          style={{ fontSize: "24px", fontWeight: "bold", padding: "15px" }}
+        <Typography variant="h6" fontWeight="bold">
+          Text
+        </Typography>
+        <IconButton onClick={onClose} size="small">
+          <Close />
+        </IconButton>
+      </Box>
+
+      <Stack spacing={2} sx={{ p: 2 }}>
+        <Button
+          variant="contained"
+          color="inherit" // Or primary if we want emphasis
+          sx={{
+            py: 2,
+            textTransform: "none",
+            justifyContent: "flex-start",
+            bgcolor: "action.selected",
+            color: "text.primary",
+            "&:hover": { bgcolor: "action.hover" },
+          }}
           onClick={() =>
             addText("Add a heading", { fontSize: 32, fontWeight: "bold" })
           }
         >
-          Add a heading
-        </button>
-        <button
-          className="text-btn medium"
-          style={{ fontSize: "18px", fontWeight: "bold", padding: "12px" }}
+          <Typography variant="h5" fontWeight="bold">
+            Add a heading
+          </Typography>
+        </Button>
+
+        <Button
+          variant="contained"
+          color="inherit"
+          sx={{
+            py: 1.5,
+            textTransform: "none",
+            justifyContent: "flex-start",
+            bgcolor: "action.selected",
+            color: "text.primary",
+            "&:hover": { bgcolor: "action.hover" },
+          }}
           onClick={() =>
-            addText("Add a subheading", { fontSize: 24, fontWeight: "bold" })
+            addText("Add a subheading", { fontSize: 24, fontWeight: "500" })
           }
         >
-          Add a subheading
-        </button>
-        <button
-          className="text-btn small"
-          style={{ fontSize: "14px", padding: "10px" }}
+          <Typography variant="h6" fontWeight="500">
+            Add a subheading
+          </Typography>
+        </Button>
+
+        <Button
+          variant="contained"
+          color="inherit"
+          sx={{
+            py: 1,
+            textTransform: "none",
+            justifyContent: "flex-start",
+            bgcolor: "action.selected",
+            color: "text.primary",
+            "&:hover": { bgcolor: "action.hover" },
+          }}
           onClick={() =>
-            addText("Add a little bit of body text", { fontSize: 18 })
+            addText("Add a little bit of body text", { fontSize: 16 })
           }
         >
-          Add a little bit of body text
-        </button>
-      </div>
-    </div>
+          <Typography variant="body1">Add a little bit of body text</Typography>
+        </Button>
+      </Stack>
+    </Paper>
   );
 };
 

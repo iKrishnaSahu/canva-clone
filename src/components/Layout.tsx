@@ -6,7 +6,8 @@ import Toolbar from "../features/editor/Toolbar";
 import CollagePanel from "../features/collage/CollagePanel";
 import TextPanel from "../features/editor/TextPanel"; // Import TextPanel
 import ElementsPanel from "../features/editor/ElementsPanel"; // Import ElementsPanel
-import "./Layout.css";
+import { Box } from "@mui/material";
+// import "./Layout.css"; // Removing CSS import as we use MUI Box
 
 const Layout: React.FC = () => {
   const [activePanel, setActivePanel] = useState<string | null>(null);
@@ -14,13 +15,28 @@ const Layout: React.FC = () => {
   const closePanel = () => setActivePanel(null);
 
   return (
-    <div className="layout-container">
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100vh",
+        bgcolor: "background.default",
+        color: "text.primary",
+      }}
+    >
       <Header />
       <Toolbar />
-      <div className="main-content">
+      <Box
+        sx={{
+          display: "flex",
+          flex: 1,
+          overflow: "hidden",
+          position: "relative",
+        }}
+      >
         <Sidebar activePanel={activePanel} onPanelChange={setActivePanel} />
 
-        {/* Panels */}
+        {/* Panels - they will need to be refactored to fit into MUI flow or keep absolute logic */}
         <CollagePanel isOpen={activePanel === "collage"} onClose={closePanel} />
         <TextPanel isOpen={activePanel === "text"} onClose={closePanel} />
         <ElementsPanel
@@ -29,8 +45,8 @@ const Layout: React.FC = () => {
         />
 
         <Workspace />
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 
