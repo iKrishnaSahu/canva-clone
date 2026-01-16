@@ -7,54 +7,18 @@ import {
   FaThLarge,
 } from "react-icons/fa";
 import { useCanvasContext } from "../context/CanvasContext";
-import { Rect, Circle, IText, FabricImage } from "fabric";
+import { FabricImage, Rect } from "fabric";
 import { addImageToFrame } from "../features/collage/collageUtils";
 import "./Sidebar.css";
 
 interface SidebarProps {
-  onCollageClick: () => void;
+  activePanel: string | null;
+  onPanelChange: (panel: string | null) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ onCollageClick }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activePanel, onPanelChange }) => {
   const { canvas } = useCanvasContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const addRectangle = () => {
-    if (!canvas) return;
-    const rect = new Rect({
-      left: 100,
-      top: 100,
-      fill: "#ff5722",
-      width: 100,
-      height: 100,
-    });
-    canvas.add(rect);
-    canvas.setActiveObject(rect);
-  };
-
-  const addCircle = () => {
-    if (!canvas) return;
-    const circle = new Circle({
-      left: 200,
-      top: 100,
-      fill: "#00bcd4",
-      radius: 50,
-    });
-    canvas.add(circle);
-    canvas.setActiveObject(circle);
-  };
-
-  const addText = () => {
-    if (!canvas) return;
-    const text = new IText("Add Heading", {
-      left: 300,
-      top: 200,
-      fontFamily: "Arial",
-      fill: "#333",
-    });
-    canvas.add(text);
-    canvas.setActiveObject(text);
-  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -64,11 +28,14 @@ const Sidebar: React.FC<SidebarProps> = ({ onCollageClick }) => {
     reader.onload = (f) => {
       const data = f.target?.result as string;
       FabricImage.fromURL(data).then((img) => {
-        // Check if a frame is selected
         const activeObject = canvas.getActiveObject();
         // We marked frames with isFrame = true
-        if (activeObject && (activeObject as any).isFrame) {
-          addImageToFrame(canvas, activeObject as Rect, img);
+        if (
+          activeObject &&
+          "isFrame" in activeObject &&
+          (activeObject as any).isFrame
+        ) {
+          addImageToFrame(canvas, activeObject as unknown as Rect, img);
         } else {
           img.set({
             left: 100,
@@ -82,8 +49,15 @@ const Sidebar: React.FC<SidebarProps> = ({ onCollageClick }) => {
       });
     };
     reader.readAsDataURL(file);
-    // Reset input
     e.target.value = "";
+  };
+
+  const togglePanel = (panel: string) => {
+    if (activePanel === panel) {
+      onPanelChange(null);
+    } else {
+      onPanelChange(panel);
+    }
   };
 
   return (
@@ -95,23 +69,31 @@ const Sidebar: React.FC<SidebarProps> = ({ onCollageClick }) => {
         accept="image/*"
         onChange={handleImageUpload}
       />
-      <div className="tool-item active">
+      <div
+        className={`tool-item ${!activePanel ? "active" : ""}`}
+        onClick={() => onPanelChange(null)}
+      >
         <FaMousePointer size={20} />
         <span>Select</span>
       </div>
-      <div className="tool-item" onClick={onCollageClick}>
+      <div
+        className={`tool-item ${activePanel === "collage" ? "active" : ""}`}
+        onClick={() => togglePanel("collage")}
+      >
         <FaThLarge size={20} />
-        <span>Collage</span>
+        <span>Layouts</span>
       </div>
-      <div className="tool-item" onClick={addRectangle}>
+      <div
+        className={`tool-item ${activePanel === "elements" ? "active" : ""}`}
+        onClick={() => togglePanel("elements")}
+      >
         <FaShapes size={20} />
-        <span>Rect</span>
+        <span>Elements</span>
       </div>
-      <div className="tool-item" onClick={addCircle}>
-        <FaShapes size={20} />
-        <span>Circle</span>
-      </div>
-      <div className="tool-item" onClick={addText}>
+      <div
+        className={`tool-item ${activePanel === "text" ? "active" : ""}`}
+        onClick={() => togglePanel("text")}
+      >
         <FaFont size={20} />
         <span>Text</span>
       </div>

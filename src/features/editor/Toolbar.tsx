@@ -8,6 +8,9 @@ import {
   FaAlignRight,
   FaMagic,
   FaImage,
+  FaBold,
+  FaItalic,
+  FaUnderline,
 } from "react-icons/fa";
 import "./Toolbar.css";
 
@@ -207,6 +210,65 @@ const Toolbar: React.FC = () => {
         singleSelection.type === "group" && (
           <button onClick={ungroupObjects}>Ungroup</button>
         )}
+
+      {/* Text Tools */}
+      {singleSelection && singleSelection.type === "i-text" && (
+        <div className="toolbar-item">
+          <button
+            onClick={() => {
+              const obj = singleSelection as any; // FabricObject with text methods
+              obj.set(
+                "fontWeight",
+                obj.fontWeight === "bold" ? "normal" : "bold"
+              );
+              canvas?.requestRenderAll();
+            }}
+            title="Bold"
+            style={{
+              fontWeight:
+                (singleSelection as any).fontWeight === "bold"
+                  ? "bold"
+                  : "normal",
+            }}
+          >
+            <FaBold />
+          </button>
+          <button
+            onClick={() => {
+              const obj = singleSelection as any;
+              obj.set(
+                "fontStyle",
+                obj.fontStyle === "italic" ? "normal" : "italic"
+              );
+              canvas?.requestRenderAll();
+            }}
+            title="Italic"
+            style={{
+              fontStyle:
+                (singleSelection as any).fontStyle === "italic"
+                  ? "italic"
+                  : "normal",
+            }}
+          >
+            <FaItalic />
+          </button>
+          <button
+            onClick={() => {
+              const obj = singleSelection as any;
+              obj.set("underline", !obj.underline);
+              canvas?.requestRenderAll();
+            }}
+            title="Underline"
+            style={{
+              textDecoration: (singleSelection as any).underline
+                ? "underline"
+                : "none",
+            }}
+          >
+            <FaUnderline />
+          </button>
+        </div>
+      )}
 
       {/* Alignment Tools */}
       <div className="toolbar-item">

@@ -4,25 +4,30 @@ import Sidebar from "./Sidebar";
 import Workspace from "./Workspace";
 import Toolbar from "../features/editor/Toolbar";
 import CollagePanel from "../features/collage/CollagePanel";
+import TextPanel from "../features/editor/TextPanel"; // Import TextPanel
+import ElementsPanel from "../features/editor/ElementsPanel"; // Import ElementsPanel
 import "./Layout.css";
 
 const Layout: React.FC = () => {
-  const [isCollagePanelOpen, setIsCollagePanelOpen] = useState(false);
+  const [activePanel, setActivePanel] = useState<string | null>(null);
 
-  const toggleCollagePanel = () => {
-    setIsCollagePanelOpen(!isCollagePanelOpen);
-  };
+  const closePanel = () => setActivePanel(null);
 
   return (
     <div className="layout-container">
       <Header />
       <Toolbar />
       <div className="main-content">
-        <Sidebar onCollageClick={toggleCollagePanel} />
-        <CollagePanel
-          isOpen={isCollagePanelOpen}
-          onClose={() => setIsCollagePanelOpen(false)}
+        <Sidebar activePanel={activePanel} onPanelChange={setActivePanel} />
+
+        {/* Panels */}
+        <CollagePanel isOpen={activePanel === "collage"} onClose={closePanel} />
+        <TextPanel isOpen={activePanel === "text"} onClose={closePanel} />
+        <ElementsPanel
+          isOpen={activePanel === "elements"}
+          onClose={closePanel}
         />
+
         <Workspace />
       </div>
     </div>
