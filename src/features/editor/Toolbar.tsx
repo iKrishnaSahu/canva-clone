@@ -41,6 +41,9 @@ import {
 const Toolbar: React.FC = () => {
   const { canvas } = useCanvasContext();
   const [selectedObjects, setSelectedObjects] = useState<FabricObject[]>([]);
+  const [spacing, setSpacing] = useState(0);
+  const [roundness, setRoundness] = useState(0);
+  const [opacity, setOpacity] = useState(1);
 
   useEffect(() => {
     if (!canvas) return;
@@ -61,6 +64,33 @@ const Toolbar: React.FC = () => {
     };
   }, [canvas]);
 
+  // Sync local state with selection
+  useEffect(() => {
+    const single = selectedObjects.length === 1 ? selectedObjects[0] : null;
+    if (single) {
+      if ((single as any).isCollageGroup) {
+        const config = (single as any).collageConfig || {
+          spacing: 0,
+          roundness: 0,
+        };
+        // Avoid redundant state updates which trigger React warnings/loops
+        setSpacing((prev) => (prev !== config.spacing ? config.spacing : prev));
+        setRoundness((prev) =>
+          prev !== config.roundness ? config.roundness : prev
+        );
+      } else if ((single as any).isFrame) {
+        const rx = (single as any).rx || 0;
+        setRoundness((prev) => (prev !== rx ? rx : prev));
+      }
+      // Sync opacity
+      const targetOpacity = (single as any).opacity ?? 1;
+      setOpacity((prev) => (prev !== targetOpacity ? targetOpacity : prev));
+    } else {
+      // Reset defaults if needed or just leave as is
+      setOpacity(1);
+    }
+  }, [selectedObjects]);
+
   const changeColor = (e: React.ChangeEvent<HTMLInputElement>) => {
     selectedObjects.forEach((obj) => {
       obj.set("fill", e.target.value);
@@ -70,6 +100,7 @@ const Toolbar: React.FC = () => {
 
   const changeOpacity = (_: Event, newValue: number | number[]) => {
     const val = newValue as number;
+    setOpacity(val);
     selectedObjects.forEach((obj) => {
       obj.set("opacity", val);
     });
@@ -174,31 +205,25 @@ const Toolbar: React.FC = () => {
   const isCollageFrame = singleSelection && (singleSelection as any).isFrame;
   const showCollageControls = isCollageGroup || isCollageFrame;
 
-  const collageConfig = isCollageGroup
-    ? (singleSelection as any).collageConfig || { spacing: 0, roundness: 0 }
-    : { spacing: 0, roundness: (singleSelection as any).rx || 0 };
-  // Note: For frames, we read rx. Spacing (padding) is stateless/delta unless stored.
-  // We default spacing to 0 for single frame adjustments as "padding" usually starts from current.
-
   const handleSpacingChange = (_: Event, newValue: number | number[]) => {
     if (!canvas) return;
     const val = newValue as number;
+    setSpacing(val);
     updateCollageSettings(
       canvas,
-      { spacing: val, roundness: collageConfig.roundness },
+      { spacing: val, roundness }, // Use local state 'roundness'
       singleSelection || undefined
     );
-    // Force re-render to update UI slider state if needed (though we read from object on render)
-    // State lifting might be better but reading from object works if we trigger re-render
     canvas.requestRenderAll();
   };
 
   const handleRoundnessChange = (_: Event, newValue: number | number[]) => {
     if (!canvas) return;
     const val = newValue as number;
+    setRoundness(val);
     updateCollageSettings(
       canvas,
-      { spacing: collageConfig.spacing, roundness: val },
+      { spacing, roundness: val }, // Use local state 'spacing'
       singleSelection || undefined
     );
     canvas.requestRenderAll();
@@ -208,7 +233,7 @@ const Toolbar: React.FC = () => {
   const commonColor = singleSelection
     ? (singleSelection.fill as string)
     : "#000000";
-  const commonOpacity = singleSelection ? singleSelection.opacity ?? 1 : 1;
+
   const isBold =
     singleSelection && (singleSelection as any).fontWeight === "bold";
   const isItalic =
@@ -257,7 +282,7 @@ const Toolbar: React.FC = () => {
         </Tooltip>
         <Slider
           size="small"
-          value={commonOpacity}
+          value={opacity}
           min={0}
           max={1}
           step={0.1}
@@ -288,16 +313,10 @@ const Toolbar: React.FC = () => {
             </Tooltip>
             <Slider
               size="small"
-              value={collageConfig.spacing || 0} // Default 0 for frame padding
+              value={spacing}
               min={0}
               max={50}
               onChange={handleSpacingChange}
-              // For Frames, spacing acts as "shrink", so subsequent drags might compound if we don't track base?
-              // `updateCollageSettings` uses `originalLayout` and absolute `spacing` value to recalculate.
-              // So the slider value MUST be the absolute "spacing" intended.
-              // For a Frame, we don't store "spacing" on it yet in `collageUtils`.
-              // If we don't store it, the slider will snap to 0.
-              // We should ideally store "padding" on the frame.
             />
           </Box>
           <Box
@@ -308,7 +327,7 @@ const Toolbar: React.FC = () => {
             </Tooltip>
             <Slider
               size="small"
-              value={collageConfig.roundness || 0}
+              value={roundness}
               min={0}
               max={50}
               onChange={handleRoundnessChange}
