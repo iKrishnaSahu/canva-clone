@@ -11,7 +11,7 @@ export const useCanvas = () => {
     // Initialize Fabric Canvas
     // Note: In Fabric v6/v7, new Canvas() is correct.
     const canvas = new Canvas(canvasRef.current, {
-      width: 800,
+      width: 480,
       height: 600,
       backgroundColor: '#ffffff',
     });

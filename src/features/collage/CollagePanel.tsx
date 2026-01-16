@@ -75,6 +75,7 @@ const CollagePanel: React.FC<CollagePanelProps> = ({ isOpen, onClose }) => {
             border: "1px solid #444",
             borderRadius: 4,
           }}
+          defaultValue="Portrait (4:5)"
           onChange={(e) => {
             const fmt = formats.find((f) => f.label === e.target.value);
             if (fmt) resizeCanvas(fmt.width, fmt.height);
