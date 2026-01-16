@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useCanvasContext } from "../../context/CanvasContext";
 import { FabricObject, FabricImage, filters } from "fabric";
+import { addImageToFrame } from "../collage/collageUtils";
 import {
   FaAlignLeft,
   FaAlignCenter,
   FaAlignRight,
   FaMagic,
+  FaImage,
 } from "react-icons/fa";
 import "./Toolbar.css";
 
@@ -219,7 +221,7 @@ const Toolbar: React.FC = () => {
         </button>
       </div>
 
-      {/* Image Filters */}
+      {/* Image Filters & Fit Controls */}
       {singleSelection && singleSelection.type === "image" && (
         <div className="toolbar-item">
           <button onClick={() => applyFilter("grayscale")} title="Grayscale">
@@ -230,6 +232,131 @@ const Toolbar: React.FC = () => {
           </button>
           <button onClick={() => applyFilter("none")} title="Clear Filters">
             Normal
+          </button>
+
+          <div className="toolbar-divider" style={{ margin: "0 5px" }} />
+
+          {/* DEBUG BUTTON */}
+          <button
+            onClick={() => {
+              // Load a placeholder
+              FabricImage.fromURL("https://placehold.co/600x400/png").then(
+                (img) => {
+                  const active = canvas?.getActiveObject();
+                  if (active && (active as any).isFrame) {
+                    addImageToFrame(canvas!, active as any, img);
+                  } else if (
+                    canvas?.getActiveObjects().length === 1 &&
+                    (canvas?.getActiveObject() as any).isFrame
+                  ) {
+                    // Sometimes selection behavior varies
+                    addImageToFrame(
+                      canvas!,
+                      canvas?.getActiveObject() as any,
+                      img
+                    );
+                  }
+                }
+              );
+            }}
+            style={{ backgroundColor: "red", color: "white" }}
+          >
+            Debug Fill
+          </button>
+
+          <button
+            onClick={() => {
+              // Fit / Fill Toggle
+              // We need the clipPath or frame dimensions to know what to fit into.
+              // We saved 'itemClipPath' in collageUtils, or we check 'clipPath'.
+              const img = singleSelection as FabricImage;
+              const clip = img.clipPath as any; // The abs-positioned rect
+              if (!clip) return;
+
+              // Frame dims (absolute since clip is absolute)
+              const frameW = clip.width * clip.scaleX;
+              const frameH = clip.height * clip.scaleY;
+
+              // Image dims
+              const imgW = img.width;
+              const imgH = img.height;
+
+              // Current state check? Let's just toggle or provide 2 buttons.
+              // Let's adding "Fit" button.
+              const scale = Math.min(frameW / imgW, frameH / imgH);
+
+              img.set({
+                scaleX: scale,
+                scaleY: scale,
+                left: clip.left + (frameW - imgW * scale) / 2,
+                top: clip.top + (frameH - imgH * scale) / 2,
+              });
+              img.setCoords();
+              canvas?.requestRenderAll();
+            }}
+            title="Fit Image to Cell"
+          >
+            Fit
+          </button>
+
+          <button
+            onClick={() => {
+              // Fill
+              const img = singleSelection as FabricImage;
+              const clip = img.clipPath as any;
+              if (!clip) return;
+
+              const frameW = clip.width * clip.scaleX;
+              const frameH = clip.height * clip.scaleY;
+              const imgW = img.width;
+              const imgH = img.height;
+
+              const scale = Math.max(frameW / imgW, frameH / imgH);
+
+              img.set({
+                scaleX: scale,
+                scaleY: scale,
+                left: clip.left + (frameW - imgW * scale) / 2,
+                top: clip.top + (frameH - imgH * scale) / 2,
+              });
+              img.setCoords();
+              canvas?.requestRenderAll();
+            }}
+            title="Fill Cell (Crop)"
+          >
+            Fill
+          </button>
+        </div>
+      )}
+
+      {/* Collage Frame Upload */}
+      {singleSelection && (singleSelection as any).isFrame && (
+        <div className="toolbar-item">
+          <input
+            type="file"
+            id="frame-upload"
+            style={{ display: "none" }}
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (!file || !canvas) return;
+              const reader = new FileReader();
+              reader.onload = (f) => {
+                const data = f.target?.result as string;
+                FabricImage.fromURL(data).then((img) => {
+                  addImageToFrame(canvas, singleSelection as any, img);
+                });
+                // Reset value
+                e.target.value = "";
+              };
+              reader.readAsDataURL(file);
+            }}
+          />
+          <button
+            onClick={() => document.getElementById("frame-upload")?.click()}
+            title="Upload Image to Cell"
+          >
+            <FaImage style={{ marginRight: 5 }} /> Add Image
           </button>
         </div>
       )}

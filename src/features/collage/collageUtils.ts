@@ -91,46 +91,55 @@ export const addGridToCanvas = (canvas: Canvas, layout: GridLayout) => {
 };
 
 export const addImageToFrame = (canvas: Canvas, frame: Rect, img: FabricImage) => {
+  // Calculate absolute dimensions and position using getBoundingRect()
+  const rect = frame.getBoundingRect();
+
+  // Account for stroke width to place image INSIDE the border
+  const strokeWidth = frame.strokeWidth || 0;
+
+  const absoluteLeft = rect.left + strokeWidth / 2;
+  const absoluteTop = rect.top + strokeWidth / 2;
+  const frameWidth = rect.width - strokeWidth;
+  const frameHeight = rect.height - strokeWidth;
+
+  // Calculate absolute center of the frame
+  const centerX = absoluteLeft + frameWidth / 2;
+  const centerY = absoluteTop + frameHeight / 2;
+
+
   // 1. Calculate image scale to cover the frame
-  const frameWidth = frame.width * frame.scaleX;
-  const frameHeight = frame.height * frame.scaleY;
-
   const scale = Math.max(frameWidth / img.width, frameHeight / img.height);
-
   img.scale(scale);
 
-  // 2. Center image
-  const centerPoint = frame.getCenterPoint();
-
+  // 2. Center image using origin (more robust than top/left calc)
   img.set({
-    left: centerPoint.x - (img.width * scale) / 2,
-    top: centerPoint.y - (img.height * scale) / 2,
-    clipPath: frame // Use the frame as clipPath
+    originX: 'center',
+    originY: 'center',
+    left: centerX,
+    top: centerY,
   });
 
-  // Clone frame for clipPath purposes if needed (Fabric clipPath is absolute)
+  // 3. ClipPath: Clone frame logic
   frame.clone().then((clonedFrame: any) => {
-    clonedFrame.absolutePositioned = true;
-    clonedFrame.left = frame.getCoords()[0].x;
-
-    // Position/Scale logic for clipPath (simplified for MVP)
-    // We reuse the basic frame rect properties but ensure it's absolute
-
+    // We want the clip path to match the INNER area exactly
     clonedFrame.set({
-      left: centerPoint.x - frameWidth / 2,
-      top: centerPoint.y - frameHeight / 2,
-      width: frameWidth / frame.scaleX,
-      height: frameHeight / frame.scaleY,
-      scaleX: frame.scaleX,
-      scaleY: frame.scaleY,
-      absolutePositioned: true
-    });
-
-    img.set({
-      itemClipPath: clonedFrame
+      originX: 'center',
+      originY: 'center',
+      left: centerX,
+      top: centerY,
+      width: frameWidth,
+      height: frameHeight,
+      scaleX: 1,
+      scaleY: 1,
+      angle: 0,
+      absolutePositioned: true,
+      group: null,
+      strokeWidth: 0, // IMPORTANT: Clip path itself should not have stroke
+      stroke: null
     });
 
     img.clipPath = clonedFrame;
+
     canvas.add(img);
     canvas.setActiveObject(img);
     canvas.requestRenderAll();
