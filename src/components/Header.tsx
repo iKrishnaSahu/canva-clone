@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useCanvasContext } from "../context/CanvasContext";
 import { useThemeContext } from "../context/ThemeContext";
 import {
@@ -19,24 +19,12 @@ import {
   FileUpload,
   FolderOpen,
 } from "@mui/icons-material";
+import ExportModal from "./ExportModal";
 
 const Header: React.FC = () => {
   const { canvas } = useCanvasContext();
   const { toggleTheme, mode } = useThemeContext();
-
-  const handleExport = () => {
-    if (canvas) {
-      const dataURL = canvas.toDataURL({
-        format: "png",
-        quality: 1,
-        multiplier: 2,
-      });
-      const link = document.createElement("a");
-      link.href = dataURL;
-      link.download = "canvas-design.png";
-      link.click();
-    }
-  };
+  const [exportModalOpen, setExportModalOpen] = useState(false);
 
   const handleSave = () => {
     if (canvas) {
@@ -86,82 +74,90 @@ const Header: React.FC = () => {
   };
 
   return (
-    <AppBar
-      position="static"
-      color="default"
-      elevation={0}
-      sx={{ borderBottom: 1, borderColor: "divider" }}
-    >
-      <Toolbar
-        sx={{ justifyContent: "space-between", minHeight: "64px !important" }}
+    <>
+      <AppBar
+        position="static"
+        color="default"
+        elevation={0}
+        sx={{ borderBottom: 1, borderColor: "divider" }}
       >
-        <Typography
-          variant="h6"
-          component="div"
-          sx={{ fontWeight: "bold", display: "flex", alignItems: "center" }}
+        <Toolbar
+          sx={{ justifyContent: "space-between", minHeight: "64px !important" }}
         >
-          CanvaClone
-        </Typography>
+          <Typography
+            variant="h6"
+            component="div"
+            sx={{ fontWeight: "bold", display: "flex", alignItems: "center" }}
+          >
+            CanvaClone
+          </Typography>
 
-        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-          <Tooltip title="Toggle Theme">
-            <IconButton onClick={toggleTheme} color="inherit">
-              {mode === "dark" ? <Brightness7 /> : <Brightness4 />}
-            </IconButton>
-          </Tooltip>
+          <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+            <Tooltip title="Toggle Theme">
+              <IconButton onClick={toggleTheme} color="inherit">
+                {mode === "dark" ? <Brightness7 /> : <Brightness4 />}
+              </IconButton>
+            </Tooltip>
 
-          <Button
-            variant="outlined"
-            startIcon={<SaveIcon />}
-            onClick={handleSave}
-            size="small"
-          >
-            Quick Save
-          </Button>
-          <Button
-            variant="outlined"
-            startIcon={<CloudDownload />}
-            onClick={handleLoad}
-            size="small"
-          >
-            Quick Load
-          </Button>
-          <Button
-            variant="outlined"
-            startIcon={<FileDownload />}
-            onClick={handleSaveFile}
-            size="small"
-          >
-            Save Project
-          </Button>
+            <Button
+              variant="outlined"
+              startIcon={<SaveIcon />}
+              onClick={handleSave}
+              size="small"
+            >
+              Quick Save
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<CloudDownload />}
+              onClick={handleLoad}
+              size="small"
+            >
+              Quick Load
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<FileDownload />}
+              onClick={handleSaveFile}
+              size="small"
+            >
+              Save Project
+            </Button>
 
-          <Button
-            component="label"
-            variant="outlined"
-            startIcon={<FolderOpen />}
-            size="small"
-          >
-            Open Project
-            <input
-              type="file"
-              accept=".json"
-              onChange={handleLoadFile}
-              style={{ display: "none" }}
-            />
-          </Button>
+            <Button
+              component="label"
+              variant="outlined"
+              startIcon={<FolderOpen />}
+              size="small"
+            >
+              Open Project
+              <input
+                type="file"
+                accept=".json"
+                onChange={handleLoadFile}
+                style={{ display: "none" }}
+              />
+            </Button>
 
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<FileUpload />}
-            onClick={handleExport}
-            size="small"
-          >
-            Export PNG
-          </Button>
-        </Box>
-      </Toolbar>
-    </AppBar>
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<FileUpload />}
+              onClick={() => setExportModalOpen(true)}
+              size="small"
+            >
+              Export Image
+            </Button>
+          </Box>
+        </Toolbar>
+      </AppBar>
+
+      <ExportModal
+        open={exportModalOpen}
+        onClose={() => setExportModalOpen(false)}
+        canvas={canvas}
+      />
+    </>
   );
 };
 

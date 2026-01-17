@@ -14,6 +14,8 @@ const mockCanvas = {
   toJSON: vi.fn(() => ({ version: "5.0.0", objects: [] })),
   loadFromJSON: vi.fn().mockResolvedValue(true),
   requestRenderAll: vi.fn(),
+  getWidth: vi.fn(() => 800),
+  getHeight: vi.fn(() => 600),
 };
 
 const mockToggleTheme = vi.fn();
@@ -26,7 +28,7 @@ const renderHeader = (canvas: any = mockCanvas) => {
       <CanvasContext.Provider value={{ canvas, setCanvas: vi.fn() }}>
         <Header />
       </CanvasContext.Provider>
-    </ThemeContext.Provider>
+    </ThemeContext.Provider>,
   );
 };
 
@@ -63,7 +65,7 @@ describe("Header", () => {
     fireEvent.click(saveBtn);
     expect(window.localStorage.setItem).toHaveBeenCalledWith(
       "canvas-design",
-      expect.any(String)
+      expect.any(String),
     );
     expect(window.alert).toHaveBeenCalled();
   });

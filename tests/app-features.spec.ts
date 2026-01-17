@@ -27,13 +27,16 @@ test.describe('App Features', () => {
     await expect(page).toHaveScreenshot('app-light-mode.png');
   });
 
-  test('should trigger export png', async ({ page }) => {
-    // Mock download
-    const downloadPromise = page.waitForEvent('download');
+  test('should trigger export image', async ({ page }) => {
+    // Open export modal
+    await page.getByRole('button', { name: 'Export Image' }).click();
+    await page.waitForSelector('[role="dialog"]');
 
-    await page.getByRole('button', { name: 'Export PNG' }).click();
+    // Setup download listener and click Export
+    const downloadPromise = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Export', exact: true }).click();
 
     const download = await downloadPromise;
-    expect(download.suggestedFilename()).toBe('canvas-design.png');
+    expect(download.suggestedFilename()).toMatch(/canvas-design\.png$/);
   });
 });
