@@ -88,15 +88,10 @@ const CollagePanel: React.FC<CollagePanelProps> = ({ isOpen, onClose }) => {
       </Box>
 
       <Box sx={{ p: 2, overflowY: "auto" }}>
-        <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: "bold" }}>
-          Cell Settings (moved to toolbar)
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+          Select a template to add it to the canvas. Use the toolbar to
+          customize borders and spacing.
         </Typography>
-        <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
-          <Typography variant="body2" color="text.secondary">
-            Use the top toolbar to adjust Spacing and Roundness when a collage
-            is selected.
-          </Typography>
-        </Paper>
 
         <FormControl fullWidth size="small" sx={{ mb: 3 }}>
           <InputLabel>Canvas Format</InputLabel>

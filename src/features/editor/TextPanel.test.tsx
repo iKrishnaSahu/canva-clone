@@ -1,4 +1,3 @@
-import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import TextPanel from "./TextPanel";
 import { vi, describe, it, expect } from "vitest";
@@ -17,7 +16,7 @@ vi.mock("fabric", () => {
         Object.assign(this, opts);
       }
       // Mock methods used in the component
-      set(key: string, val: any) {}
+      set() {}
     },
   };
 });

@@ -105,5 +105,33 @@ describe('collageUtils', () => {
       expect(setCall.width).toEqual(expect.any(Number));
       expect(setCall.height).toEqual(expect.any(Number));
     });
+    it('should update border settings (width, color, style)', () => {
+      const frames = [
+        new Rect({ left: 0, top: 0, width: 200, height: 400 } as any)
+      ];
+      frames.forEach(f => (f as any).isFrame = true);
+      const group = new Group(frames);
+      (group as any).isCollageGroup = true;
+      (group as any).originalLayout = {
+        frames: [{ left: 0, top: 0, width: 200, height: 400 }]
+      };
+
+      canvas.getActiveObject = vi.fn(() => group);
+
+      // Test Border Color & Width
+      updateCollageSettings(canvas, { spacing: 0, roundness: 0, borderColor: 'red', borderWidth: 5, borderStyle: 'solid' });
+
+      const frame = frames[0];
+      const setCall1 = (frame.set as any).mock.calls[0][0]; // First call
+      expect(setCall1.stroke).toBe('red');
+      expect(setCall1.strokeWidth).toBe(5);
+      expect(setCall1.strokeDashArray).toBeNull(); // Solid = null or empty
+
+      // Test Border Style (Dashed)
+      (frame.set as any).mockClear();
+      updateCollageSettings(canvas, { spacing: 0, roundness: 0, borderStyle: 'dashed' });
+      const setCall2 = (frame.set as any).mock.calls[0][0];
+      expect(setCall2.strokeDashArray).toEqual([10, 5]);
+    });
   });
 });

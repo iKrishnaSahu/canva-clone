@@ -1,5 +1,4 @@
-import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import Header from "./Header";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import { CanvasContext } from "../context/CanvasContext";

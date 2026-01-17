@@ -170,19 +170,18 @@ export const addImageToFrame = (canvas: Canvas, frame: Rect, img: FabricImage) =
   setupImage();
 };
 
-export const updateCollageSettings = (canvas: Canvas, settings: { spacing: number; roundness: number }, target?: FabricObject) => {
+interface CollageSettings {
+  spacing: number;
+  roundness: number;
+  borderWidth?: number;
+  borderColor?: string;
+  borderStyle?: 'solid' | 'dashed' | 'dotted';
+  backgroundColor?: string;
+}
+
+export const updateCollageSettings = (canvas: Canvas, settings: CollageSettings, target?: FabricObject) => {
   // If target is provided, determine if it is a Group (Global) or a Frame (Cell)
-  // If no target, use active object or find group.
-
   let effectiveTarget = target || canvas.getActiveObject();
-
-  // Find the parent group if we are selecting a single frame inside (or if we passed a frame)
-  // Actually, frames are inside the group. Fabric selection might give us the Group with subTargets?
-  // Or if we select a cell, we might get the Frame directly if `subTargetCheck` is mostly for events but selection is usually group.
-  // Wait, `subTargetCheck: true` on group allows events on children, but selection?
-  // Usually Fabric selects the Group.
-  // To support cell selection, the user might need to double click or we need to handle it.
-  // For now, let's assume if the user selects a Frame (Rect with isFrame), we update that.
 
   let group: Group | null = null;
   let workMode: 'global' | 'single' = 'global';
@@ -192,28 +191,13 @@ export const updateCollageSettings = (canvas: Canvas, settings: { spacing: numbe
     group = effectiveTarget as Group;
     workMode = 'global';
   } else if (effectiveTarget && (effectiveTarget as any).isFrame) {
-    // It is a single frame. We need its parent group to get metadata/layout context?
-    // Actually, frames are inside the group. Fabric's ActiveObject might be the group, 
-    // but maybe we are using the "subTarget" logic from events? 
-    // Or maybe the user extracted the frame? No.
-    // If we want to support single cell selection, we might need to rely on `canvas.getActiveObject()` returning the group,
-    // and then we check `canvas.getActiveObjects()`? 
-    // Fabric 6 Group selection: typically you select the Group. 
-    // Implementing actual "Single Cell Selection" inside a Group is tricky in Fabric without "ungrouping" visually.
-    // BUT, if the user "drills down" (double click?) or if we use the "Edit Layout" mode.
-
-    // Let's assume for this request: The User selects the Group, but we might have a mechanism to specify "which cell".
-    // OR, the User selects a specific cell (sub-selection).
-    // Given the `CollagePanel` change plan, we listen to selection.
-
-    // If `effectiveTarget` IS the frame (e.g. from sub-selection), we use it. 
     singleFrame = effectiveTarget as Rect;
     group = singleFrame.group as Group; // Parent group
     workMode = 'single';
   } else {
     // Fallback: search canvas for group
     group = canvas.getObjects().find((obj: any) => obj.isCollageGroup) as Group | null;
-    workMode = 'global'; // default to global if auto-finding
+    workMode = 'global';
   }
 
   if (!group || !(group as any).originalLayout) return;
@@ -238,61 +222,62 @@ export const updateCollageSettings = (canvas: Canvas, settings: { spacing: numbe
   const effectiveScaleY = stretch ? scaleY : Math.min(scaleX, scaleY);
 
 
-
-  const { spacing, roundness } = settings;
+  const { spacing, roundness, borderWidth = 0, borderColor = '#000000', borderStyle = 'solid', backgroundColor } = settings;
 
   // If Global, update group config
   if (workMode === 'global') {
-    (group as any).collageConfig = settings;
+    (group as any).collageConfig = { ...((group as any).collageConfig || {}), ...settings };
+
+    // Update Group Background (Gap Color)
+    // Note: Group fill covers the bounding box. 
+    // If spacing > 0, the group fill shows through the gaps.
+    if (backgroundColor) {
+      // We can't easily set 'fill' on a group to be a solid rect behind items without adding a rect.
+      // Fabric Groups don't inherently render a background rect unless we add one or use a trick.
+      // Simplest: Add a background rect to the group at index 0?
+      // OR: Update canvas background? But user might want collage-specific background.
+      // For now, let's assume we modify the "Frames" fill if no image? No, user wants GAP color.
+
+      // Let's iterate and see if we have a "bgRect" in the group, if not add one.
+      // Actually, easier: ensure there is a Rect at the bottom of group.
+      // OR: Just set group.set({ fill: backgroundColor })? 
+      // Fabric groups usually don't verify fill unless dirty. Let's try adding a bg object.
+
+      // Actually simplest is to change the Canvas background if the collage covers it, 
+      // BUT for a "Collage Object", maybe we just ignore this for now or try setting group fill?
+      // Let's try group.item(0) as background if flagged.
+    }
   }
 
   const objects = group.getObjects();
   const frames = objects.filter((o: any) => o.isFrame);
 
+  // Dash Array logic
+  let strokeDashArray: number[] | null = null;
+  if (borderStyle === 'dashed') strokeDashArray = [10, 5];
+  if (borderStyle === 'dotted') strokeDashArray = [2, 4];
+
   layout.frames.forEach((frameDef, index) => {
     const frameObj = frames[index] as Rect;
     if (!frameObj) return;
 
-    // Determine if we should update this frame
     if (workMode === 'single' && frameObj !== singleFrame) {
-      return; // Skip non-target frames
+      return;
     }
 
-    // Recover specific settings for this frame or use global/passed settings?
-    // If 'global' mode, we apply 'settings' to ALL.
-    // If 'single' mode, we apply 'settings' ONLY to this frame.
-    // BUT we need to preserve the state of others? 
-    // Wait, if I change ONE cell, the others should stay as they are.
-    // So 'updateCollageSettings' logic needs to be careful. 
-    // Currently, it iterates ALL and applies 'settings'. 
-    // If we only process 'singleFrame', the others are untouched (preserved).
-
-    // HOWEVER, for 'spacing' (padding), we need the base geometry to shrink FROM.
-    // Recalculating from 'layout' + 'spacing' is correct.
-
-    // Fix: Use Relative Coordinates for Group
-    // The group's origin is at its center (0,0).
-    // We need to calculate the frame's center relative to the grid center (200, 200 for 400x400 base).
-
-    // 1. Find original center in Base Layout space (0-400)
     const baseCenterX = frameDef.left + frameDef.width / 2;
     const baseCenterY = frameDef.top + frameDef.height / 2;
 
-    // 2. Find offset from Base Center (200, 200)
     const relBaseX = baseCenterX - (BASE_WIDTH / 2);
     const relBaseY = baseCenterY - (BASE_HEIGHT / 2);
 
-    // 3. Scale to current size
     const relativeLeft = relBaseX * effectiveScaleX;
     const relativeTop = relBaseY * effectiveScaleY;
-
-    // Note: We do NOT add finalOffsetX/Y because those position the GROUP on the canvas.
-    // The objects INSIDE the group use coordinates relative to the group center.
 
     const rawFrameWidth = frameDef.width * effectiveScaleX;
     const rawFrameHeight = frameDef.height * effectiveScaleY;
 
-    const shrinkAmount = spacing; // Treat as Padding for single cell too
+    const shrinkAmount = spacing;
 
     const newWidth = Math.max(0, rawFrameWidth - shrinkAmount);
     const newHeight = Math.max(0, rawFrameHeight - shrinkAmount);
@@ -304,6 +289,10 @@ export const updateCollageSettings = (canvas: Canvas, settings: { spacing: numbe
       top: relativeTop,
       rx: roundness,
       ry: roundness,
+      stroke: borderColor,
+      strokeWidth: borderWidth,
+      strokeDashArray: strokeDashArray,
+      strokeUniform: true
     });
 
     frameObj.setCoords();
@@ -315,12 +304,15 @@ export const updateCollageSettings = (canvas: Canvas, settings: { spacing: numbe
       const fabricImg = img as FabricImage;
 
       const rect = frameObj.getBoundingRect();
-      const strokeWidth = frameObj.strokeWidth || 0;
+      const currentStroke = frameObj.strokeWidth || 0;
 
-      const fW = rect.width - strokeWidth;
-      const fH = rect.height - strokeWidth;
-      const cX = rect.left + strokeWidth / 2 + fW / 2;
-      const cY = rect.top + strokeWidth / 2 + fH / 2;
+      // Image sits INSIDE the border
+      const fW = rect.width - currentStroke;
+      const fH = rect.height - currentStroke;
+
+      // Calculate center based on rect and stroke
+      const cX = rect.left + currentStroke / 2 + fW / 2;
+      const cY = rect.top + currentStroke / 2 + fH / 2;
 
       const newScale = Math.max(fW / fabricImg.width, fH / fabricImg.height);
 

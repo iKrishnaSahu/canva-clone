@@ -36,6 +36,9 @@ import {
   Divider,
   Typography,
   Button,
+  Select,
+  MenuItem,
+  FormControl,
 } from "@mui/material";
 
 const Toolbar: React.FC = () => {
@@ -341,6 +344,102 @@ const Toolbar: React.FC = () => {
               onChange={handleRoundnessChange}
               aria-label="Roundness"
             />
+          </Box>
+          <Divider orientation="vertical" flexItem />
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Tooltip title="Background Color">
+              <input
+                type="color"
+                aria-label="Background Color"
+                data-testid="background-color-input"
+                onChange={(e) => {
+                  if (!canvas) return;
+                  updateCollageSettings(
+                    canvas,
+                    { spacing, roundness, backgroundColor: e.target.value },
+                    singleSelection || undefined
+                  );
+                }}
+                style={{
+                  width: 24,
+                  height: 24,
+                  padding: 0,
+                  border: "none",
+                  borderRadius: 4,
+                  cursor: "pointer",
+                }}
+              />
+            </Tooltip>
+          </Box>
+          <Divider orientation="vertical" flexItem />
+
+          {/* Border Controls */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Tooltip title="Border Color">
+              <input
+                type="color"
+                aria-label="Border Color"
+                data-testid="border-color-input"
+                // Use a default or retrieve from state if available
+                onChange={(e) => {
+                  if (!canvas) return;
+                  updateCollageSettings(
+                    canvas,
+                    { spacing, roundness, borderColor: e.target.value },
+                    singleSelection || undefined
+                  );
+                }}
+                style={{
+                  width: 24,
+                  height: 24,
+                  padding: 0,
+                  border: "none",
+                  borderRadius: 4,
+                  cursor: "pointer",
+                }}
+              />
+            </Tooltip>
+            <Tooltip title="Border Width">
+              <Box sx={{ width: 80 }}>
+                <Slider
+                  size="small"
+                  min={0}
+                  max={20}
+                  defaultValue={0}
+                  onChange={(_, val) => {
+                    if (!canvas) return;
+                    updateCollageSettings(
+                      canvas,
+                      { spacing, roundness, borderWidth: val as number },
+                      singleSelection || undefined
+                    );
+                  }}
+                  aria-label="Border Width"
+                  data-testid="border-width-slider"
+                />
+              </Box>
+            </Tooltip>
+            <FormControl size="small" variant="standard" sx={{ minWidth: 60 }}>
+              <Select
+                defaultValue="solid"
+                aria-label="Border Style"
+                data-testid="border-style-select"
+                onChange={(e) => {
+                  if (!canvas) return;
+                  updateCollageSettings(
+                    canvas,
+                    { spacing, roundness, borderStyle: e.target.value as any },
+                    singleSelection || undefined
+                  );
+                }}
+                disableUnderline
+              >
+                <MenuItem value="solid">Solid</MenuItem>
+                <MenuItem value="dashed">Dashed</MenuItem>
+                <MenuItem value="dotted">Dotted</MenuItem>
+              </Select>
+            </FormControl>
           </Box>
           <Divider orientation="vertical" flexItem />
         </>
