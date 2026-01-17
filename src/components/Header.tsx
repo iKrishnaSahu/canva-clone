@@ -89,7 +89,7 @@ const Header: React.FC = () => {
             component="div"
             sx={{ fontWeight: "bold", display: "flex", alignItems: "center" }}
           >
-            CanvaClone
+            Pixelcraft
           </Typography>
 
           <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
