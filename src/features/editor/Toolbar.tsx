@@ -317,6 +317,7 @@ const Toolbar: React.FC = () => {
               min={0}
               max={50}
               onChange={handleSpacingChange}
+              aria-label="Spacing"
             />
           </Box>
           <Box
@@ -331,6 +332,7 @@ const Toolbar: React.FC = () => {
               min={0}
               max={50}
               onChange={handleRoundnessChange}
+              aria-label="Roundness"
             />
           </Box>
           <Divider orientation="vertical" flexItem />
