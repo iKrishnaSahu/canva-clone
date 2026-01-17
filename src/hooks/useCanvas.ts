@@ -17,7 +17,7 @@ export const useCanvas = () => {
     });
 
     setFabricCanvas(canvas);
-    (window as any).fabricCanvas = canvas;
+    (window as any).canvas = canvas;
 
     return () => {
       canvas.dispose();

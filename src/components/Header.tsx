@@ -50,9 +50,12 @@ const Header: React.FC = () => {
     if (canvas) {
       const json = localStorage.getItem("canvas-design");
       if (json) {
-        canvas.loadFromJSON(JSON.parse(json)).then(() => {
-          canvas.requestRenderAll();
-        });
+        canvas
+          .loadFromJSON(JSON.parse(json))
+          .then(() => {
+            canvas.requestRenderAll();
+          })
+          .catch((err) => console.error("Error loading JSON:", err));
       }
     }
   };

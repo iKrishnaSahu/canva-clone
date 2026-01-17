@@ -24,7 +24,12 @@ test.describe('Text Tool', () => {
     const italicBtn = page.locator('button[value="italic"]');
     await italicBtn.click();
 
-    // 5. Visual check
+    // 5. Toggle Underline
+    const underlineBtn = page.locator('button[value="underline"]');
+    await expect(underlineBtn).toBeVisible();
+    await underlineBtn.click();
+
+    // 6. Visual check
     // Deselect first to see text clearly? Or keep selected to see toolbar state.
     // Let's click away to deselect and check canvas render
     const canvas = page.locator('canvas.upper-canvas');

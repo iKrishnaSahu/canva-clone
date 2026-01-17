@@ -41,4 +41,29 @@ test.describe('Elements (Shapes)', () => {
 
     await expect(page).toHaveScreenshot('elements-circle.png');
   });
+  test('should add a triangle', async ({ page }) => {
+    await page.getByRole('button', { name: 'Triangle' }).click();
+
+    // Visual Check
+    await page.waitForTimeout(500);
+    // Deselect
+    const canvas = page.locator('canvas.upper-canvas');
+    const box = await canvas.boundingBox();
+    if (box) await page.mouse.click(box.x, box.y);
+
+    await expect(page).toHaveScreenshot('elements-triangle.png');
+  });
+
+  test('should add a line', async ({ page }) => {
+    await page.getByRole('button', { name: 'Line' }).click();
+
+    // Visual Check
+    await page.waitForTimeout(500);
+    // Deselect
+    const canvas = page.locator('canvas.upper-canvas');
+    const box = await canvas.boundingBox();
+    if (box) await page.mouse.click(box.x, box.y);
+
+    await expect(page).toHaveScreenshot('elements-line.png');
+  });
 });
