@@ -73,6 +73,33 @@ const ExportModal: React.FC<ExportModalProps> = ({ open, onClose, canvas }) => {
     };
   };
 
+  // Helper to convert data URL to Blob
+  const dataURLToBlob = (dataURL: string): Blob => {
+    const parts = dataURL.split(",");
+    const mime = parts[0].match(/:(.*?);/)?.[1] || "image/png";
+    const bstr = atob(parts[1]);
+    const n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    for (let i = 0; i < n; i++) {
+      u8arr[i] = bstr.charCodeAt(i);
+    }
+    return new Blob([u8arr], { type: mime });
+  };
+
+  // Helper to trigger download
+  const downloadBlob = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", filename);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    // Revoke after a short delay to ensure download starts
+    setTimeout(() => URL.revokeObjectURL(url), 100);
+  };
+
   const handleExport = () => {
     if (!canvas) return;
 
@@ -84,22 +111,16 @@ const ExportModal: React.FC<ExportModalProps> = ({ open, onClose, canvas }) => {
       // Export as SVG
       const svgData = canvas.toSVG();
       const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = filename;
-      link.click();
-      URL.revokeObjectURL(link.href);
+      downloadBlob(blob, filename);
     } else {
-      // Export as raster format
+      // Export as raster format - convert to blob for reliable download
       const dataURL = canvas.toDataURL({
         format: options.format,
         quality: options.quality / 100,
         multiplier,
       });
-      const link = document.createElement("a");
-      link.href = dataURL;
-      link.download = filename;
-      link.click();
+      const blob = dataURLToBlob(dataURL);
+      downloadBlob(blob, filename);
     }
 
     onClose();
