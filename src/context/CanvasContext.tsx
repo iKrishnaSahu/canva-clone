@@ -6,7 +6,9 @@ interface CanvasContextType {
   setCanvas: (canvas: Canvas | null) => void;
 }
 
-const CanvasContext = createContext<CanvasContextType | undefined>(undefined);
+export const CanvasContext = createContext<CanvasContextType | undefined>(
+  undefined
+);
 
 export const CanvasProvider: React.FC<{ children: React.ReactNode }> = ({
   children,

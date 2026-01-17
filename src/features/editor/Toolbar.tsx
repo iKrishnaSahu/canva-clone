@@ -64,6 +64,13 @@ const Toolbar: React.FC = () => {
     };
   }, [canvas]);
 
+  // Initial Sync
+  useEffect(() => {
+    if (canvas) {
+      setSelectedObjects(canvas.getActiveObjects());
+    }
+  }, [canvas]);
+
   // Sync local state with selection
   useEffect(() => {
     const single = selectedObjects.length === 1 ? selectedObjects[0] : null;
