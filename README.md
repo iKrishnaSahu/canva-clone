@@ -147,7 +147,7 @@ The app is deployed on Firebase Hosting. To deploy your own instance:
 
 ## 📄 License
 
-This project is private and not licensed for public use.
+This project is licensed under the [MIT License](LICENSE).
 
 ---
 
